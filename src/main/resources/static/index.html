@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Wallet</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #22263a;
+            --border: #2e3349;
+            --accent: #6c63ff;
+            --accent-hover: #8a83ff;
+            --green: #22c55e;
+            --red: #ef4444;
+            --orange: #f97316;
+            --text: #e8eaf6;
+            --muted: #7b82a8;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 32px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #6c63ff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: var(--muted); margin-top: 6px; font-size: 0.9rem; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .grid .wide { grid-column: 1 / -1; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+        }
+        .card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+        .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+        .card.red::before { background: linear-gradient(90deg, var(--red), transparent); }
+
+        .card-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            background: rgba(108,99,255,0.15);
+        }
+        .card.green .card-icon { background: rgba(34,197,94,0.15); }
+        .card.orange .card-icon { background: rgba(249,115,22,0.15); }
+        .card.red .card-icon { background: rgba(239,68,68,0.15); }
+
+        .card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            color: var(--text);
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+            outline: none;
+            margin-bottom: 14px;
+            transition: border-color 0.2s;
+        }
+        input:focus { border-color: var(--accent); }
+        input::placeholder { color: var(--muted); }
+
+        button {
+            width: 100%;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--accent);
+            color: white;
+        }
+        button:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+        button.green { background: var(--green); }
+        button.green:hover { background: #16a34a; }
+        button.orange { background: var(--orange); }
+        button.orange:hover { background: #ea580c; }
+        button.red { background: var(--red); }
+        button.red:hover { background: #dc2626; }
+        button.secondary {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            width: auto;
+            padding: 10px 20px;
+        }
+        button.secondary:hover { background: var(--border); }
+
+        .row { display: flex; gap: 10px; margin-top: 4px; }
+        .row button { flex: 1; }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px; right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 0.875rem;
+            max-width: 320px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+            pointer-events: auto;
+            border-left: 3px solid var(--accent);
+        }
+        .toast.success { border-left-color: var(--green); }
+        .toast.error { border-left-color: var(--red); }
+        @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { opacity: 1; } to { opacity: 0; transform: translateX(100px); } }
+
+        .extrato-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .extrato-header input { margin: 0; flex: 1; }
+
+        .extrato-list {
+            background: var(--surface2);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .extrato-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+        .extrato-item:last-child { border-bottom: none; }
+        .extrato-item:hover { background: rgba(255,255,255,0.03); }
+
+        .extrato-info { display: flex; flex-direction: column; gap: 2px; }
+        .extrato-tipo {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .extrato-data { font-size: 0.75rem; color: var(--muted); }
+        .extrato-valor {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .extrato-valor.positivo { color: var(--green); }
+        .extrato-valor.negativo { color: var(--red); }
+
+        .extrato-empty {
+            text-align: center;
+            padding: 32px;
+            color: var(--muted);
+            font-size: 0.875rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .badge.dep { background: rgba(34,197,94,0.15); color: var(--green); }
+        .badge.saq { background: rgba(239,68,68,0.15); color: var(--red); }
+        .badge.tra { background: rgba(108,99,255,0.15); color: var(--accent); }
+
+        .saldo-display {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            display: none;
+        }
+        .saldo-display .saldo-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
+        .saldo-display .saldo-valor { font-size: 1.4rem; font-weight: 700; color: var(--green); }
+
+        @media (max-width: 600px) {
+            body { padding: 20px 12px; }
+            header h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>💳 Digital Wallet</h1>
+    <p>Gestão de contas bancárias — depósitos, saques e transferências</p>
+</header>
+
+<div class="grid">
+    <div class="card">
+        <div class="card-icon">🏦</div>
+        <h3>Nova Conta</h3>
+        <label>Saldo Inicial (R$)</label>
+        <input type="number" id="saldoInicial" value="0" min="0" step="0.01" placeholder="0,00">
+        <button onclick="criarConta()">Criar Conta</button>
+    </div>
+    <div class="card green">
+        <div class="card-icon">🔍</div>
+        <h3>Consultar Conta</h3>
+        <label>ID da Conta</label>
+        <input type="number" id="idConsulta" placeholder="Ex: 1">
+        <div class="saldo-display" id="saldoDisplay">
+            <div class="saldo-label">Saldo disponível</div>
+            <div class="saldo-valor" id="saldoValor">R$ 0,00</div>
+        </div>
+        <button class="green" onclick="consultarConta()">Ver Saldo</button>
+    </div>
+    <div class="card green">
+        <div class="card-icon">⬇️</div>
+        <h3>Depósito</h3>
+        <label>ID da Conta</label>
+        <input type="number" id="idDeposito" placeholder="Ex: 1">
+        <label>Valor (R$)</label>
+        <input type="number" id="valorDeposito" placeholder="0,00" min="0.01" step="0.01">
+        <button class="green" onclick="depositar()">Depositar</button>
+    </div>
+    <div class="card orange">
+        <div class="card-icon">⬆️</div>
+        <h3>Saque</h3>
+        <label>ID da Conta</label>
+        <input type="number" id="idSaque" placeholder="Ex: 1">
+        <label>Valor (R$)</label>
+        <input type="number" id="valorSaque" placeholder="0,00" min="0.01" step="0.01">
+        <button class="orange" onclick="sacar()">Sacar</button>
+    </div>
+    <div class="card">
+        <div class="card-icon">↔️</div>
+        <h3>Transferência <span style="font-size:0.75rem;color:var(--muted);font-weight:400">(+ 1% de taxa)</span></h3>
+        <label>Conta de Origem (ID)</label>
+        <input type="number" id="idOrigem" placeholder="Ex: 1">
+        <label>Conta de Destino (ID)</label>
+        <input type="number" id="idDestino" placeholder="Ex: 2">
+        <label>Valor (R$)</label>
+        <input type="number" id="valorTransferencia" placeholder="0,00" min="0.01" step="0.01">
+        <button onclick="transferir()">Confirmar Transferência</button>
+    </div>
+    <div class="card wide">
+        <div class="card-icon">📋</div>
+        <h3>Extrato Bancário</h3>
+        <div class="extrato-header">
+            <input type="number" id="idExtrato" placeholder="ID da conta..." style="max-width: 200px;">
+            <button class="secondary" onclick="verExtrato()">Carregar</button>
+        </div>
+        <div class="extrato-list" id="telaExtrato">
+            <div class="extrato-empty">Digite o ID de uma conta e clique em "Carregar"</div>
+        </div>
+    </div>
+
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+    const API = '/api';
+    const paraCentavos = v => Math.round(Number(v) * 100);
+    const paraReais = v => 'R$ ' + (v / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formatDate = dt => new Date(dt).toLocaleString('pt-BR');
+
+    function toast(msg, type = 'info') {
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+        el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+        document.getElementById('toastContainer').appendChild(el);
+        setTimeout(() => {
+            el.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => el.remove(), 300);
+        }, 3500);
+    }
+
+    async function apiFetch(url, opts = {}) {
+        const res = await fetch(API + url, {
+            headers: { 'Content-Type': 'application/json' },
+            ...opts
+        });
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch { data = text; }
+        return { ok: res.ok, status: res.status, data };
+    }
+
+    async function criarConta() {
+        const saldo = document.getElementById('saldoInicial').value;
+        const { ok, data } = await apiFetch('/contas', {
+            method: 'POST',
+            body: JSON.stringify({ saldoInicialEmCentavos: paraCentavos(saldo || 0) })
+        });
+        if (ok) {
+            toast(`Conta criada com sucesso! ID: ${data.id} — Saldo: ${paraReais(data.saldoEmCentavos)}`, 'success');
+        } else {
+            toast(data?.mensagem || 'Erro ao criar conta', 'error');
+        }
+    }
+
+    async function consultarConta() {
+        const id = document.getElementById('idConsulta').value;
+        if (!id) { toast('Digite o ID da conta', 'error'); return; }
+        const { ok, data } = await apiFetch(`/contas/${id}`);
+        const display = document.getElementById('saldoDisplay');
+        if (ok) {
+            display.style.display = 'block';
+            document.getElementById('saldoValor').textContent = paraReais(data.saldoEmCentavos);
+            toast(`Saldo da conta ${id}: ${paraReais(data.saldoEmCentavos)}`, 'success');
+        } else {
+            display.style.display = 'none';
+            toast(data?.mensagem || 'Conta não encontrada', 'error');
+        }
+    }
+
+    async function depositar() {
+        const id = document.getElementById('idDeposito').value;
+        const valor = document.getElementById('valorDeposito').value;
+        if (!id || !valor) { toast('Preencha todos os campos', 'error'); return; }
+        const { ok, data } = await apiFetch(`/contas/${id}/deposito`, {
+            method: 'POST',
+            body: JSON.stringify({ valorEmCentavos: paraCentavos(valor) })
+        });
+        if (ok) {
+            toast(`Depósito realizado! Novo saldo: ${paraReais(data.saldoEmCentavos)}`, 'success');
+            document.getElementById('valorDeposito').value = '';
+        } else {
+            toast(data?.mensagem || 'Erro no depósito', 'error');
+        }
+    }
+
+    async function sacar() {
+        const id = document.getElementById('idSaque').value;
+        const valor = document.getElementById('valorSaque').value;
+        if (!id || !valor) { toast('Preencha todos os campos', 'error'); return; }
+        const { ok, data } = await apiFetch(`/contas/${id}/saque`, {
+            method: 'POST',
+            body: JSON.stringify({ valorEmCentavos: paraCentavos(valor) })
+        });
+        if (ok) {
+            toast(`Saque realizado! Novo saldo: ${paraReais(data.saldoEmCentavos)}`, 'success');
+            document.getElementById('valorSaque').value = '';
+        } else {
+            toast(data?.mensagem || 'Erro no saque', 'error');
+        }
+    }
+
+    async function transferir() {
+    const origem = document.getElementById('idOrigem').value;
+    const destino = document.getElementById('idDestino').value;
+    const valor = document.getElementById('valorTransferencia').value;
+
+    if (!origem || !destino || !valor) {
+        toast('Preencha todos os campos', 'error');
+        return;
+    }
+
+    const { ok, data } = await apiFetch('/transferencias', {
+        method: 'POST',
+        body: JSON.stringify({
+            origemId: Number(origem),
+            destinoId: Number(destino),
+            valorEmCentavos: paraCentavos(valor)
+        })
+    });
+
+    if (ok) {
+        toast('Transferência realizada com sucesso!', 'success');
+        document.getElementById('valorTransferencia').value = '';
+    } else {
+        console.error("Erro da API:", data);
+        toast(data?.mensagem || 'Erro na transferência', 'error');
+    }
+}
+
+    async function verExtrato() {
+        const id = document.getElementById('idExtrato').value;
+        if (!id) { toast('Digite o ID da conta', 'error'); return; }
+        const { ok, data } = await apiFetch(`/contas/${id}/extrato`);
+        const container = document.getElementById('telaExtrato');
+        if (!ok) {
+            container.innerHTML = `<div class="extrato-empty">❌ ${data?.mensagem || 'Conta não encontrada'}</div>`;
+            return;
+        }
+        if (data.length === 0) {
+            container.innerHTML = '<div class="extrato-empty">Sem movimentações ainda</div>';
+            return;
+        }
+        container.innerHTML = data.map(t => {
+            let tipo, badge, sinal, cls;
+            if (t.tipo === 'DEPOSITO') {
+                tipo = 'Depósito'; badge = 'dep'; sinal = '+'; cls = 'positivo';
+            } else if (t.tipo === 'SAQUE') {
+                tipo = 'Saque'; badge = 'saq'; sinal = '-'; cls = 'negativo';
+            } else if (t.contaOrigemId == id) {
+                tipo = `Transferência → Conta ${t.contaDestinoId}`; badge = 'tra'; sinal = '-'; cls = 'negativo';
+            } else {
+                tipo = `Recebido ← Conta ${t.contaOrigemId}`; badge = 'tra'; sinal = '+'; cls = 'positivo';
+            }
+            return `
+                <div class="extrato-item">
+                    <div class="extrato-info">
+                        <div class="extrato-tipo">${tipo}</div>
+                        <span class="badge ${badge}">${t.tipo}</span>
+                        <div class="extrato-data">${formatDate(t.dataHora)}</div>
+                    </div>
+                    <div class="extrato-valor ${cls}">${sinal}${paraReais(t.valorEmCentavos)}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Enter key support
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            const focused = document.activeElement;
+            if (focused.id === 'idExtrato') verExtrato();
+            else if (focused.id === 'idConsulta') consultarConta();
+        }
+    });
+</script>
+</body>
+</html>
