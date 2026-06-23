@@ -1,23 +1,8 @@
-# 💳 Digital Wallet API
+# Digital Wallet API
 
 API completa para gestão de contas bancárias com suporte a depósitos, saques, transferências com taxa de 1% e histórico de transações.
 
-## ✨ Melhorias em relação ao original
-
-| Problema original | Correção |
-|---|---|
-| `java.version = 26` (não existe) | Java 17 LTS |
-| Entity `conta` minúscula (bugs JPQL) | Renomeada para `Conta` (convenção Java) |
-| Colunas `NOT NULL` em transações anulavam depósitos/saques | Colunas `nullable = true` para origem/destino |
-| Sem endpoint GET para consultar saldo | `GET /api/contas/{id}` adicionado |
-| Rate limit apenas 10 req/min | 60 req/min (mais razoável) |
-| Extrato sem ordenação | Ordenado por data decrescente |
-| `docker-compose.yml` sem healthcheck | `healthcheck` adicionado |
-| Dockerfile sem multi-stage build | Build otimizado com multi-stage |
-| Testes incompletos / lógica incorreta | Testes abrangentes e corrigidos |
-| Frontend com `alert()` bloqueante | Toast notifications modernas |
-
-## 🛠 Tecnologias
+## Tecnologias
 
 - **Java 17**
 - **Spring Boot 3.2.4**
@@ -27,7 +12,7 @@ API completa para gestão de contas bancárias com suporte a depósitos, saques,
 - **Testcontainers** (testes integrados com PostgreSQL real)
 - **Springdoc OpenAPI** (Swagger UI)
 
-## 🚀 Como rodar
+## Como rodar
 
 ### Com Docker Compose (recomendado)
 
